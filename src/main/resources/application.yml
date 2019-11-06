@@ -1,0 +1,5 @@
+kafka:
+  bootstrapAddress: localhost:9092
+spring:
+  datasource:
+    platform: h2
