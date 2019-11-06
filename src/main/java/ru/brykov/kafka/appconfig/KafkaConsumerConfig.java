@@ -3,8 +3,8 @@ package ru.brykov.kafka.appconfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -12,7 +12,6 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import ru.brykov.kafka.model.Messages;
-import ru.brykov.kafka.service.Listener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,22 +24,28 @@ public class KafkaConsumerConfig {
     private String bootstrapAddress;
 
     @Bean
-    public Listener listener() {
-        return new Listener();
+    public ConcurrentKafkaListenerContainerFactory<String, Messages> groupFContainerFactory() {
+        return containerFactory("group1");
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Messages> kafkaListenerContainerFactory() {
+    @ConditionalOnProperty(name = "kafka.topic.partitions", havingValue = "2")
+    public ConcurrentKafkaListenerContainerFactory<String, Messages> groupSContainerFactory() {
+        return containerFactory("group2");
+    }
+
+    private ConcurrentKafkaListenerContainerFactory<String, Messages> containerFactory(String group) {
         ConcurrentKafkaListenerContainerFactory<String, Messages> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(consumerFactory(group));
         return factory;
     }
 
-    @Bean
-    public ConsumerFactory<String, Messages> consumerFactory() {
+    private ConsumerFactory<String, Messages> consumerFactory(String groupId) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "group1");
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>());
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        JsonDeserializer<Messages> deserializer = new JsonDeserializer<>();
+        deserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
     }
 }
