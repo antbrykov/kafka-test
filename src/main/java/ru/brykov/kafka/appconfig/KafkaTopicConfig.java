@@ -18,6 +18,9 @@ public class KafkaTopicConfig {
     @Value(value = "${kafka.topic.name}")
     private String topicName;
 
+    @Value(value = "${kafka.topic.partitions}")
+    private int numPartitions;
+
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> configs = new HashMap<>();
@@ -27,6 +30,6 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic topic1() {
-        return new NewTopic(topicName, 2, (short) 1);
+        return new NewTopic(topicName, numPartitions, (short) 1);
     }
 }

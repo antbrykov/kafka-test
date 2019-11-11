@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 import ru.brykov.kafka.service.entity.Message;
 
 @Repository
-public interface CustomizedCrudRepository extends CrudRepository<Message, Long> {
+public interface DatabaseRepository extends CrudRepository<Message, Long> {
 
 }

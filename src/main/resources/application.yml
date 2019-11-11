@@ -1,12 +1,18 @@
 database:
   batch:
     size: 10
-    timeout: 5000
+    timeout: 1000
 kafka:
   bootstrapAddress: localhost:9092
   topic:
     name: topicName1
-    partitions: 1
+    partitions: 2
+  group1:
+    name: group1
+  group2:
+    name: group2
+  groups:
+    number: 2
 spring:
   datasource:
     platform: h2
@@ -19,3 +25,7 @@ spring:
         jdbc:
           batch_size: 10
           order_inserts: true
+      javax:
+        persistence:
+          validation:
+            mode: none
